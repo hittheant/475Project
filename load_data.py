@@ -18,12 +18,12 @@ def load_data(filepath, target_shape):
     for i, filename in enumerate(files):
         data.append(load_image(filepath, f'{filename}.png', target_shape))
         labels.append(load_image_data(filepath, f'{filename}.xml'))
-
+    return data, labels
 
 def load_image_data(filepath, filename):
-    f = open(f'{filepath}/{filename}')
+    f = open(f'{filepath}/annotations/{filename}')
     data = f.read()
-    soup = BeautifulSoup(data, 'xml')
+    soup = BeautifulSoup(data, 'html.parser')
     objects = soup.find_all('object')
 
     num_objs = len(objects)
@@ -52,9 +52,8 @@ def load_image(filepath, filename, target_shape):
     img = Image.open(f'{filepath}/images/{filename}')
     transform = torchvision.transforms.Resize(target_shape)
     img = transform(img)
-    print(img.shape())
     return np.asarray(img)
 
 
 if __name__ == '__main__':
-    load_data('./archive', (600, 600))
+    data, labels = load_data('./archive', (600, 600))
