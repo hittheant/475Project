@@ -1,24 +1,33 @@
 import os
-
+from sklearn.model_selection import train_test_split
 import torchvision
 from bs4 import BeautifulSoup
 from PIL import Image
 import numpy as np
 
 
-def load_data(filepath, target_shape):
+def load_data(filepath, target_shape, faces=False):
     imgs = list(sorted(os.listdir(f"{filepath}/images/")))
-    num_examples = len(imgs)
     files = []
     for img in imgs:
         [filename, _] = img.split('.')
         files.append(filename)
     data = []
     labels = []
-    for i, filename in enumerate(files):
-        data.append(load_image(filepath, f'{filename}.png', target_shape))
-        labels.append(load_image_data(filepath, f'{filename}.xml'))
-    return data, labels
+
+    for filename in files:
+        if faces:
+            [boxes, mask_l] = load_image_data(filepath, f'{filename}.xml')
+            data.extend(load_cropped_images(filepath, f'{filename}.png', boxes))
+            labels.extend(mask_l.tolist())
+        else:
+            data.append(load_image(filepath, f'{filename}.png', target_shape))
+            labels.append(load_image_data(filepath, f'{filename}.xml'))
+
+    x_train, x_test, y_train, y_test = train_test_split(data, labels, test_size=0.25)
+
+    return [x_train, x_test, y_train, y_test]
+
 
 def load_image_data(filepath, filename):
     f = open(f'{filepath}/annotations/{filename}')
@@ -26,8 +35,7 @@ def load_image_data(filepath, filename):
     soup = BeautifulSoup(data, 'html.parser')
     objects = soup.find_all('object')
 
-    num_objs = len(objects)
-    labels = []
+    y = []
     boxes = []
     for obj in objects:
         xmin = int(obj.find('xmin').text)
@@ -37,15 +45,15 @@ def load_image_data(filepath, filename):
         boxes.append([xmin, ymin, xmax, ymax])
 
         if obj.find('name').text == "with_mask":
-            labels.append(1)
+            y.append(1)
         elif obj.find('name').text == "without_mask":
-            labels.append(0)
+            y.append(0)
         else:
-            labels.append(2)
+            y.append(2)
 
     boxes = np.array(boxes)
-    labels = np.array(labels)
-    return [boxes, labels]
+    y = np.array(y)
+    return [boxes, y]
 
 
 def load_image(filepath, filename, target_shape):
@@ -55,5 +63,18 @@ def load_image(filepath, filename, target_shape):
     return np.asarray(img)
 
 
+def load_cropped_images(filepath, filename, boxes):
+    img = Image.open(f'{filepath}/images/{filename}')
+    img = img.convert("RGB")
+    transform = torchvision.transforms.Resize((30, 30))
+
+    cropped_images = []
+    for box in boxes:
+        cropped_img = img.crop(box)
+        cropped_images.append(np.asarray(transform(cropped_img)))
+
+    return cropped_images
+
+
 if __name__ == '__main__':
-    data, labels = load_data('./archive', (600, 600))
+    data, labels = load_data('./archive', (600, 600), faces=True)
