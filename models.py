@@ -9,12 +9,11 @@ class MaskClassifier():
     def __init__(self):
         self.model = models.Sequential()
         self.model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(30, 30, 3)))
-        self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
+        self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Flatten())
-        self.model.add(layers.Dense(225, activation='relu'))
-        self.model.add(layers.Dense(3, activation='relu'))
-        self.model.add(layers.Softmax(3))
+        self.model.add(layers.Dense(225, activation='sigmoid'))
+        self.model.add(layers.Dense(3, activation='softmax'))
         self.model.compile(optimizer='adam',
                            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                            metrics=['accuracy'])
@@ -28,9 +27,12 @@ class MaskClassifier():
         history = self.model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))
         plt.plot(history.history['accuracy'], label='accuracy')
         plt.plot(history.history['val_accuracy'], label='val_accuracy')
+        plt.plot(history.history['loss'])
+        plt.plot(history.history['val_loss'])
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
         plt.ylim([0.5, 1])
         plt.legend(loc='lower right')
+        plt.show()
 
         test_loss, test_acc = self.model.evaluate(x_test, y_test, verbose=2)
