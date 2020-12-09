@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    x_train, x_test, y_train, y_test = load_data(args.data_dir, args.target_size, faces=True)
+    (x_train, x_test, y_train, y_test) = load_data(args.data_dir, args.target_size, faces=True)
 
     model = MaskClassifier()
     model.train(x_train, y_train, x_test, y_test)
