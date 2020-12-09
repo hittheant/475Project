@@ -2,7 +2,6 @@ from keras import models
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.optimizers import Adam
-import tensorflow.keras.backend as K
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +11,7 @@ class MaskClassifier():
     def __init__(self):
         self.model = Sequential()
         self.model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(30, 30, 3)))
-        # self.model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
+        # self.best_balanced_model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(225, activation='sigmoid'))
@@ -34,7 +33,7 @@ class MaskClassifier():
         plt.plot(history.history['val_loss'], label='validation loss')
         plt.xlabel('Epoch')
         plt.ylabel('Accuracy')
-        plt.ylim([0.5, 1])
+        plt.ylim([0.3, 1])
         plt.legend(loc='lower right')
         plt.savefig('./results/training.png')
 
@@ -50,6 +49,13 @@ class MaskClassifier():
         np.save('./results/y_test_pred.npy', y_pred)
         np.save('./results/y_test.npy', y_test)
         np.save('./results/x_test.npy', x_test)
-        # self.model.save('./results/m')
+        self.model.save('./results/m.h5')
         test_loss, test_acc = self.model.evaluate(x_test, y_test, verbose=2)
         print('\n', test_loss, test_acc)
+
+    # def test(self):
+    #     self.model = tf.keras.models.load_model('./results/best_balanced_model', compile=False)
+    #     self.model.compile(optimizer=Adam(lr=0.0005),
+    #                        loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+    #                        metrics=['accuracy'])
+    #
