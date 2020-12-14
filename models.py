@@ -11,16 +11,19 @@ class MaskClassifier():
     def __init__(self):
         self.model = Sequential()
         self.model.add(layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(30, 30, 3)))
-        # self.best_balanced_model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
+        self.model.add(layers.Conv2D(64, (3, 3), activation='relu', padding='same'))
         self.model.add(layers.MaxPooling2D((2, 2)))
         self.model.add(layers.Flatten())
         self.model.add(layers.Dense(225, activation='sigmoid'))
         self.model.add(layers.Dense(3, activation='softmax'))
-        self.model.compile(optimizer=Adam(lr=0.0005),
+        self.model.compile(optimizer=Adam(lr=0.001),
                            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
                            metrics=['accuracy'])
 
     def train(self, x_train, y_train, x_test, y_test):
+        tf.keras.utils.plot_model(
+            self.model, to_file='./results/model.png', show_shapes=True, show_layer_names=True
+        )
         print(self.model.summary())
         x_train = np.array(x_train)/255.0
         x_test = np.array(x_test)/255.0
