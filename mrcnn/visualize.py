@@ -121,6 +121,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
     ax.set_title(title)
 
     masked_image = image.astype(np.uint32).copy()
+
     for i in range(N):
         color = colors[i]
 
@@ -147,6 +148,10 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                 color='w', size=11, backgroundcolor="none")
 
         # Mask
+        import cv2
+        masks = cv2.resize(masks.astype(np.uint8), (128, 128))
+        if len(masks.shape) == 2:
+            masks = np.expand_dims(masks, 2)
         mask = masks[:, :, i]
         if show_mask:
             masked_image = apply_mask(masked_image, mask, color)

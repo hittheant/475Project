@@ -1289,14 +1289,16 @@ def load_image_gt(dataset, config, image_id, augmentation=None):
     source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
     active_class_ids[source_class_ids] = 1
 
-    # Resize masks to smaller size to reduce memory usage
-    if config.USE_MINI_MASK:
-        mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
+    # # Resize masks to smaller size to reduce memory usage
+    # if config.USE_MINI_MASK:
+    #     mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
 
     # Image meta data
     image_meta = compose_image_meta(image_id, original_shape, image.shape,
                                     window, scale, active_class_ids)
 
+    if image.shape[2] == 4:
+        image = image[:, :, :3]
     return image, image_meta, class_ids, bbox, mask
 
 
