@@ -96,6 +96,7 @@ class BestNNMaskClassifier:
         plt.ylim([0.5, 1])
         plt.legend(loc='lower right')
         plt.savefig('./results/training.png')
+        tf.keras.utils.plot_model(self.model, to_file="model.png", show_shapes=True)
 
         xs = np.load('./archive/raw_splits/x_test.npy')
         ys = np.load('./archive/raw_splits/y_test.npy')
