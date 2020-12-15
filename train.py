@@ -1,3 +1,4 @@
+import numpy as np
 from argparse import ArgumentParser
 from load_data import load_data
 from models import MaskClassifier
@@ -14,4 +15,4 @@ if __name__ == '__main__':
     (x_train, x_test, y_train, y_test) = load_data(args.data_dir, args.target_size, faces=True)
 
     model = MaskClassifier()
-    model.train(x_train, y_train, x_test, y_test)
+    model.train(x_train.astype(np.float32), y_train.astype(np.float32), x_test.astype(np.float32), y_test.astype(np.float32))

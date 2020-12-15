@@ -79,7 +79,6 @@ class FacesConfig(Config):
 
     # use small validation steps since the epoch is small
     VALIDATION_STEPS = 5
-    USE_MINI_MASK = False
 
 
 config = FacesConfig()
@@ -154,11 +153,11 @@ class FacesDataset(utils.Dataset):
             mask[ymin:ymax, xmin:xmax, i] = 1
 
             if obj.find('name').text == 'with_mask':
-                class_ids.append(1)
-            elif obj.find('name').text == 'without_mask':
-                class_ids.append(0)
-            else:
                 class_ids.append(2)
+            elif obj.find('name').text == 'without_mask':
+                class_ids.append(1)
+            else:
+                class_ids.append(3)
 
         mask = np.array(mask)
         class_ids = np.array(class_ids)
@@ -185,40 +184,40 @@ dataset_test = FacesDataset()
 dataset_test.load_data(subset='test')
 dataset_test.prepare()
 
-# Create model in training mode
-model = modellib.MaskRCNN(mode="training", config=config, model_dir=MODEL_DIR)
-
-# Which weights to start with?
-init_with = "imagenet"  #"coco"  # imagenet, coco, or last
-
-if init_with == "imagenet":
-    model.load_weights(model.get_imagenet_weights(), by_name=True)
-elif init_with == "coco":
-    # Load weights trained on MS COCO, but skip layers that
-    # are different due to the different number of classes
-    # See README for instructions to download the COCO weights
-    model.load_weights(COCO_MODEL_PATH) #, by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"])
-elif init_with == "last":
-    # Load the last model you trained and continue training
-    model.load_weights(model.find_last(), by_name=True)
-
-# Train the head branches
-# Passing layers="heads" freezes all layers except the head
-# layers. You can also pass a regular expression to select
-# which layers to train by name pattern.
-model.train(dataset_train, dataset_valid,
-            learning_rate=config.LEARNING_RATE,
-            epochs=1,
-            layers='heads')
-
-# Fine tune all layers
-# Passing layers="all" trains all layers. You can also
-# pass a regular expression to select which layers to
-# train by name pattern.
-model.train(dataset_train, dataset_valid,
-            learning_rate=config.LEARNING_RATE / 10,
-            epochs=2,
-            layers="all")
+# # Create model in training mode
+# model = modellib.MaskRCNN(mode="training", config=config, model_dir=MODEL_DIR)
+#
+# # Which weights to start with?
+# init_with = "imagenet"  #"coco"  # imagenet, coco, or last
+#
+# if init_with == "imagenet":
+#     model.load_weights(model.get_imagenet_weights(), by_name=True)
+# elif init_with == "coco":
+#     # Load weights trained on MS COCO, but skip layers that
+#     # are different due to the different number of classes
+#     # See README for instructions to download the COCO weights
+#     model.load_weights(COCO_MODEL_PATH) #, by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc", "mrcnn_bbox", "mrcnn_mask"])
+# elif init_with == "last":
+#     # Load the last model you trained and continue training
+#     model.load_weights(model.find_last(), by_name=True)
+#
+# # Train the head branches
+# # Passing layers="heads" freezes all layers except the head
+# # layers. You can also pass a regular expression to select
+# # which layers to train by name pattern.
+# model.train(dataset_train, dataset_valid,
+#             learning_rate=config.LEARNING_RATE,
+#             epochs=1,
+#             layers='heads')
+#
+# # Fine tune all layers
+# # Passing layers="all" trains all layers. You can also
+# # pass a regular expression to select which layers to
+# # train by name pattern.
+# model.train(dataset_train, dataset_valid,
+#             learning_rate=config.LEARNING_RATE / 10,
+#             epochs=2,
+#             layers="all")
 
 
 
